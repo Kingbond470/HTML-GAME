@@ -1,0 +1,223 @@
+<html>
+	<head>
+		<title>KingbondL Car Game</title>
+		<style>
+			body{
+				margin: 0px;
+				padding: 0px;
+				background-color: #000;
+				font-family: sans-serif;
+			}
+			#heading{
+				color: white;
+				margin-top: 30px;
+			}
+			#wrapper{
+				margin: 100px auto;
+				height: 450px;
+				width: 692px;
+			}
+			#side{
+				height: 450px;
+				width: 220px;
+				background: url('./image/side.png');
+				float: left;
+			}
+			#container{
+				height: 450px;
+				width: 270px;
+				float: left;
+			}
+			#canvas{
+				background-color: #fff;
+			}
+			#score{
+				background: url('./image/score.png');
+				height: 450px;
+				width: 202px;
+				float: left;
+			}
+			#current_score {
+			    height: 15px;
+			    width: 70px;
+			    background-color: #030100;
+			    position: relative;
+			    top: 66px;
+			    right: -78px;
+			    line-height: 15px;
+			    font-weight: bolder;
+			    color: #00ff00;
+			    text-align: center;
+			}
+			#high_score {
+			    height: 15px;
+			    width: 70px;
+			    background-color: #030100;
+			    position: relative;
+			    top: 31px;
+			    right: -78px;
+			    line-height: 15px;
+			    font-weight: bolder;
+			    color: #ff0000;
+			    text-align: center;
+			}
+		</style>
+		<script>
+			var bg = new Image();
+			bg.src = './image/bg.jpg';
+
+			var pl = new Image();
+			pl.src = './image/player.png';
+
+			var car = new Image();
+			car.src = './image/rival.png';
+
+			var finish_line = new Image();
+			finish_line.src = './image/finish.webp';
+
+			function init(){
+				var ctx = document.getElementById('canvas').getContext('2d');
+				var cw = ctx.canvas.width, ch = ctx.canvas.height;
+
+				var rivals = [{"id":"left-rival","x":20,"y":-50},
+							  {"id":"center-rival","x":120,"y":-350},
+							  {"id":"right-rival","x":220,"y":-650},
+							  {"id":"left-rival","x":20,"y":-950},
+							  {"id":"center-rival","x":120,"y":-1250},
+							  {"id":"right-rival","x":220,"y":-1300},
+							  {"id":"left-rival","x":20,"y":-1550},
+							  {"id":"center-rival","x":120,"y":-1850},
+							  {"id":"left-rival","x":20,"y":-2150},
+							  {"id":"right-rival","x":220,"y":-2450},
+							  {"id":"left-rival","x":20,"y":-2450},
+							  {"id":"left-rival","x":20,"y":-2750},
+							  {"id":"center-rival","x":120,"y":-3050},
+							  {"id":"right-rival","x":220,"y":-3350},
+							  {"id":"left-rival","x":20,"y":-3650},
+							  {"id":"center-rival","x":120,"y":-3950},
+							  {"id":"left-rival","x":20,"y":-3900},
+							  {"id":"right-rival","x":220,"y":-4250},
+							  {"id":"left-rival","x":20,"y":-4550},
+							  {"id":"center-rival","x":120,"y":-4850},
+							  {"id":"right-rival","x":220,"y":-5150},
+							  {"id":"left-rival","x":20,"y":-5450},
+				];
+
+				var saved_score = localStorage.getItem("saved_score");
+
+				function finishline(){
+					this.x = 0, this.y = -5900, this.w = finishline.width, this.h = finishline.height;
+					this.render = function(){
+						ctx.drawImage(finish_line,this.x,this.y+=3);
+						if(player.y<=this.y){
+							alert("You Won!!");
+							var choice = confirm("Do You Want To Play Again?");
+							if(choice == true){
+								location.reload();
+							}
+							else{
+								alert("Wish to see you again.");
+							}
+						}
+					}
+				}
+
+				function rivalRender(){
+					for(var j=0;j<rivals.length;j++){
+						ctx.drawImage(car,rivals[j].x,rivals[j].y+=3);
+						if((player.x+20) >= rivals[j].x && player.x <= (rivals[j].x+20) && player.y <= (rivals[j].y+57)){
+							alert("You Loose");
+							var choice = confirm("Do You Want To Play Again?");
+							if(choice == true){
+								location.reload();
+							}
+							else{
+								alert("Wish to see you again.");
+							}
+						}
+						if(rivals[j].y>=450){
+							rivals.splice(j,1);
+						}
+					}
+				}
+
+				function background(){
+					this.x = 0, this.y = -500, this.w = bg.width, this.h = bg.height;
+					this.render = function(){
+						ctx.drawImage(bg,0,this.y+=5);
+						if(this.y>=0){
+							this.y = -500;
+						}
+					} 
+				}
+
+				function player(){
+					this.x = 120, this.y = 380, this.w = pl.width, this.h = pl.height;
+					this.render = function(){
+						ctx.drawImage(pl,this.x,this.y);
+					}
+				}
+
+				var background = new background();
+				var player = new player();
+				var finishline = new finishline();
+
+				var current_score=0;
+				var c_score = document.getElementById('current_score');
+				var h_score = document.getElementById('high_score');
+
+				var high_score=0;
+
+				function animate(){
+					ctx.save();
+					background.render();
+					finishline.render();
+					player.render();
+					rivalRender();
+					c_score.innerHTML = current_score++;
+					if(current_score > high_score){
+						high_score = current_score;
+						localStorage.setItem("saved_score", high_score);
+					}
+					h_score.innerHTML = saved_score;
+					ctx.restore();
+				}
+
+				document.addEventListener('keydown',function(event){
+					var keypress = String.fromCharCode(event.keyCode);
+					if(keypress == "A"){
+						if(player.x>=30){
+							player.x-=10;
+						}
+			        }  else if(keypress == "D"){
+			            if(player.x<=210){
+							player.x+=10;
+						}
+			        }
+				});
+
+				var animateInterval = setInterval(animate, 10);
+			}
+
+
+			window.addEventListener('load',function(event){
+				init();
+			});
+		</script>
+	</head>
+	<body>
+		<h1 id="heading">Use A and D key to move left and right</h1>
+		<div id="wrapper">
+			<div id="side"></div>
+			<div id="container">
+				<canvas id="canvas" height="450" width="270">
+					<p>Your browser doesn't support canvas</p>
+				</canvas>
+			</div>
+			<div id="score">
+				<div id="high_score"></div>
+				<div id="current_score"></div>
+			</div>
+		</div>
+	</body>
+</html>
